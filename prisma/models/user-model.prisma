@@ -1,0 +1,107 @@
+model Users {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  email    String    @unique
+  password String
+  name     String
+  role     Role      @default(USER)
+  verifyAt DateTime?
+
+  followers  UserFollowers[]
+  profile    UserProfiles?
+  address    UserAddress?
+  activities Activity[]
+  sessions   UserSessions[]
+  posts      Posts[]
+  chats      Chat[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserSessions {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   Users  @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+}
+
+model PasswordResets {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  token     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  type      ActivityType
+  userId    String       @db.ObjectId
+  user      Users        @relation(fields: [userId], references: [id])
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime     @default(now())
+}
+
+model UserProfiles {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  bio          String?
+  photo        String?
+  coverPhoto   String?
+  about        String?
+  gender       Gender?
+  relationship Relationship?
+
+  user   Users  @relation(fields: [userId], references: [id])
+  userId String @unique @db.ObjectId
+}
+
+model UserAddress {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  street    String?
+  city      String?
+  country   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   Users  @relation(fields: [userId], references: [id])
+  userId String @unique @db.ObjectId
+}
+
+model UserFollowers {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   Users  @relation(fields: [userId], references: [id])
+  userId String @unique @db.ObjectId
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NONE
+}
+
+enum Relationship {
+  MARRIED
+  SINGLE
+}
+
+enum ActivityType {
+  USER_REGISTER
+  USER_UPDATE
+  POST_LIKE
+  POST_COMMENT
+  ADMIN_LOGIN
+  FORGOT_PASSWORD
+  CHANGE_PASSWORD
+}

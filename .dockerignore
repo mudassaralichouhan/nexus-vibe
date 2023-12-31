@@ -1,0 +1,8 @@
+node_modules
+package-lock.json
+.idea
+.vscode
+docker
+.docker
+prisma/schema.prisma
+dist

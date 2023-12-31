@@ -1,0 +1,86 @@
+model Posts {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String?
+  likes          PostLikes[]
+  comments       PostComments[]
+  postCategories PostCategories[]
+  postTags       PostTags[]
+  image          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User   Users  @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+}
+
+// PostCategory model (junction table)
+model PostCategories {
+  id         String @default(auto()) @map("_id") @db.ObjectId
+  postId     String @db.ObjectId
+  categoryId String @db.ObjectId
+
+  post     Posts      @relation(fields: [postId], references: [id])
+  category Categories @relation(fields: [categoryId], references: [id])
+
+  @@id([id])
+  @@unique([postId, categoryId])
+}
+
+// PostCategories model
+model Categories {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  slug   String  @unique
+  name   String
+  detail String?
+  image  String?
+
+  posts PostCategories[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// PostCategory model (junction table)
+model PostTags {
+  id     String @default(auto()) @map("_id") @db.ObjectId
+  postId String @db.ObjectId
+  tagId  String @db.ObjectId
+
+  post Posts @relation(fields: [postId], references: [id])
+  tag  Tags  @relation(fields: [tagId], references: [id])
+
+  @@id([id])
+  @@unique([postId, tagId])
+}
+
+model Tags {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PostLikes {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User   Users  @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+  Posts  Posts  @relation(fields: [postId], references: [id])
+  postId String @db.ObjectId
+}
+
+model PostComments {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User   Users  @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+  Posts  Posts  @relation(fields: [postId], references: [id])
+  postId String @db.ObjectId
+}

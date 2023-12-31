@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+
+  # docker exec -it api_app bash
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-ctr
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/app
+    networks:
+      - clearly-network
+    depends_on:
+      - mongo
+      - redis
+      - minio
+
+  # docker exec -it mongo bash
+  # mongosh --host <hostname>:<port> --username <your_username> --password <your_password> --authenticationDatabase admin
+  mongo:
+    image: "prismagraphql/mongo-single-replica:5.0.3"
+    container_name: mongo-ctr
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $MONGODB_USER
+      MONGO_INITDB_ROOT_PASSWORD: $MONGODB_PASSWORD
+    volumes:
+      - clearly_volume:/data/db
+    networks:
+      - clearly-network
+
+  # docker exec -it redis redis-cli
+  redis:
+    image: "redis:latest"
+    container_name: redis-ctr
+    ports:
+      - "6379:6379"
+    command: "redis-server --requirepass $REDIS_PASSWORD"
+    volumes:
+      - clearly_volume:/usr/local/etc/redis
+    networks:
+      - clearly-network
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio-ctr
+    ports:
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=$MINIO_ROOT_USER
+      - MINIO_ROOT_PASSWORD=$MINIO_ROOT_PASS
+    volumes:
+      - clearly_volume:/data
+    networks:
+      - clearly-network
+    command: server /data --console-address ":9001"
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mail-hog-ctr
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # HTTP port
+    #environment: # To run with authentication, uncomment the following lines
+    #  - MH_UI_AUTH_FILE=/auth.htpasswd
+    volumes:
+      - clearly_volume:/app/data
+    #  - ./path/to/auth.htpasswd:/auth.htpasswd
+    networks:
+      - clearly-network
+
+networks:
+  clearly-network:
+    driver: bridge
+
+volumes:
+  clearly_volume: { }
